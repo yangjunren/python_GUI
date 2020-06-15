@@ -1,0 +1,51 @@
+# -*- coding: utf-8 -*-
+from qiniu import QiniuMacAuth, http
+import tkinter as tk
+from tkinter import messagebox
+
+
+def btmEntry():
+    access_key = entry.get()
+    secret_key = entry1.get()
+    bucket = entry2.get()
+    if all([access_key, secret_key, bucket]):
+        auth = QiniuMacAuth(access_key, secret_key)
+        # 请求URL
+        url = f"http://rs.qbox.me/drop/{bucket}"
+        try:
+            # 发起POST请求
+            ret, res = http._post_with_qiniu_mac(url, {}, auth=auth)
+            headers = {"code": res.status_code, "reqid": res.req_id, "xlog": res.x_log}
+
+            if headers["code"] == 200:
+                messagebox.showinfo(bucket, "删除成功")
+            else:
+                messagebox.showinfo(bucket, "删除失败，请确认输入参数")
+        except Exception as e:
+            messagebox.showerror("异常", e)
+    else:
+        messagebox.showerror("error", "请输入完整信息")
+
+
+window = tk.Tk()
+window.title("七牛空间删除")
+window.geometry("500x400+500+200")
+
+labWord = tk.Label(text="AK: ")
+labWord.grid(row=0, column=0, padx=50)
+entry = tk.Entry(width=30)
+entry.grid(row=0, column=1)
+
+labWord1 = tk.Label(text="SK: ")
+labWord1.grid(row=1, column=0, padx=50)
+entry1 = tk.Entry(width=30, show="*")
+entry1.grid(row=1, column=1)
+
+labWord = tk.Label(text="bucket: ")
+labWord.grid(row=2, column=0, )
+entry2 = tk.Entry(width=30)
+entry2.grid(row=2, column=1)
+
+commitButton = tk.Button(text="确认删除空间", width=18, height=5, command=btmEntry)
+commitButton.grid(row=3, column=1)
+window.mainloop()
